@@ -5,6 +5,6 @@ echo "[1/2] Running candidate solution..."
 python solution.py
 
 echo "[2/2] Running tests..."
-python tests/test_task.py
+pytest tests/test_task.py -q
 
 echo "[OK] All tests passed"

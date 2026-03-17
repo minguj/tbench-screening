@@ -1,12 +1,12 @@
 {
   "total_incidents": 10,
   "by_service": {
-    "auth": 4,
-    "billing": 4,
+    "auth": 3,
+    "billing": 2,
     "gateway": 8,
-    "orders": 2,
+    "orders": 1,
     "search": 1,
-    "worker": 8
+    "worker": 7
   },
   "incidents": [
     {
@@ -17,6 +17,7 @@
         "worker"
       ],
       "count": 4,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:16:01Z",
       "last_seen": "2026-03-15T01:16:05Z",
       "duration_seconds": 4
@@ -27,6 +28,7 @@
         "auth"
       ],
       "count": 1,
+      "severity": "WARN",
       "first_seen": "2026-03-15T01:17:10Z",
       "last_seen": "2026-03-15T01:17:10Z",
       "duration_seconds": 0
@@ -37,6 +39,7 @@
         "worker"
       ],
       "count": 2,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:18:00Z",
       "last_seen": "2026-03-15T01:18:30Z",
       "duration_seconds": 30
@@ -47,6 +50,7 @@
         "gateway"
       ],
       "count": 1,
+      "severity": "WARN",
       "first_seen": "2026-03-15T01:20:00Z",
       "last_seen": "2026-03-15T01:20:00Z",
       "duration_seconds": 0
@@ -59,6 +63,7 @@
         "worker"
       ],
       "count": 4,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:18:20Z",
       "last_seen": "2026-03-15T01:20:20Z",
       "duration_seconds": 120
@@ -70,6 +75,7 @@
         "worker"
       ],
       "count": 2,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:21:00Z",
       "last_seen": "2026-03-15T01:23:00Z",
       "duration_seconds": 120
@@ -82,6 +88,7 @@
         "worker"
       ],
       "count": 4,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:20:10Z",
       "last_seen": "2026-03-15T01:20:40Z",
       "duration_seconds": 30
@@ -94,6 +101,7 @@
         "worker"
       ],
       "count": 3,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:19:50Z",
       "last_seen": "2026-03-15T01:21:30Z",
       "duration_seconds": 100
@@ -106,6 +114,7 @@
         "worker"
       ],
       "count": 3,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:22:00Z",
       "last_seen": "2026-03-15T01:24:35Z",
       "duration_seconds": 155
@@ -117,6 +126,7 @@
         "gateway"
       ],
       "count": 3,
+      "severity": "WARN",
       "first_seen": "2026-03-15T01:23:15Z",
       "last_seen": "2026-03-15T01:25:00Z",
       "duration_seconds": 105

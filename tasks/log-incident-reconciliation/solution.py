@@ -4,155 +4,187 @@ from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "output"
 OUTPUT_PATH = OUTPUT_DIR / "report.json"
 
 KST = timezone(timedelta(hours=9))
+UTC = timezone.utc
 
 APP_PATTERN = re.compile(
-    r'^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) '
-    r'(?P<severity>ERROR|WARN) '
-    r'service=(?P<service>\S+) '
-    r'msg="(?P<msg>.*?)" '
-    r'incident_id=(?P<incident_id>\S+)$'
+    r"""
+    ^
+    (?P<ts>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})
+    \s+
+    (?P<severity>ERROR|WARN)
+    \s+
+    service=(?P<service>[A-Za-z0-9_-]+)
+    \s+
+    msg=".*?"
+    \s+
+    incident_id=(?P<incident_id>[A-Za-z0-9_-]+)
+    $
+    """,
+    re.VERBOSE,
 )
 
 WORKER_PATTERN = re.compile(
-    r'^\[(?P<ts>[^\]]+)\]\s+'
-    r'(?P<severity>ERROR|WARN)\s+'
-    r'(?P<service>\w+):.*'
-    r'\(incident=(?P<incident_id>[^)]+)\)$'
+    r"""
+    ^
+    \[(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)\]
+    \s+
+    (?P<severity>ERROR|WARN)
+    \s+
+    (?P<service>[A-Za-z0-9_-]+):
+    .*
+    \(incident=(?P<incident_id>[A-Za-z0-9_-]+)\)
+    $
+    """,
+    re.VERBOSE,
 )
 
 GATEWAY_PATTERN = re.compile(
-    r'^(?P<ts>\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})\s+'
-    r'(?P<severity>ERROR|WARN)\s+'
-    r'(?P<service>\w+)\s+.*'
-    r'\bid=(?P<incident_id>\S+)$'
+    r"""
+    ^
+    (?P<ts>\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}:\d{2})
+    \s+
+    (?P<severity>ERROR|WARN)
+    \s+
+    (?P<service>[A-Za-z0-9_-]+)
+    \s+
+    .*
+    \sid=(?P<incident_id>[A-Za-z0-9_-]+)
+    $
+    """,
+    re.VERBOSE,
 )
 
-
-def to_utc_iso(ts: str, source_type: str) -> str:
-    if source_type == "app":
-        dt = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=KST)
-        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    if source_type == "gateway":
-        dt = datetime.strptime(ts, "%d/%m/%Y %H:%M:%S").replace(tzinfo=KST)
-        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    if ts.endswith("Z"):
-        dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    dt = datetime.fromisoformat(ts)
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+SEVERITY_RANK = {
+    "WARN": 1,
+    "ERROR": 2,
+}
 
 
-def parse_app_log(path: Path):
-    events = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        m = APP_PATTERN.match(line.strip())
-        if not m:
+def to_iso_utc(dt: datetime) -> str:
+    return dt.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def parse_app_line(line: str):
+    match = APP_PATTERN.match(line.strip())
+    if not match:
+        return None
+
+    dt_local = datetime.strptime(match.group("ts"), "%Y-%m-%d %H:%M:%S").replace(tzinfo=KST)
+    dt_utc = dt_local.astimezone(UTC)
+
+    return {
+        "timestamp": dt_utc,
+        "service": match.group("service"),
+        "incident_id": match.group("incident_id"),
+        "severity": match.group("severity"),
+    }
+
+
+def parse_worker_line(line: str):
+    match = WORKER_PATTERN.match(line.strip())
+    if not match:
+        return None
+
+    dt_utc = datetime.strptime(match.group("ts"), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
+
+    return {
+        "timestamp": dt_utc,
+        "service": match.group("service"),
+        "incident_id": match.group("incident_id"),
+        "severity": match.group("severity"),
+    }
+
+
+def parse_gateway_line(line: str):
+    match = GATEWAY_PATTERN.match(line.strip())
+    if not match:
+        return None
+
+    dt_local = datetime.strptime(match.group("ts"), "%d/%m/%Y %H:%M:%S").replace(tzinfo=KST)
+    dt_utc = dt_local.astimezone(UTC)
+
+    return {
+        "timestamp": dt_utc,
+        "service": match.group("service"),
+        "incident_id": match.group("incident_id"),
+        "severity": match.group("severity"),
+    }
+
+
+def parse_file(path: Path, parser):
+    entries = []
+    if not path.exists():
+        return entries
+
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line:
             continue
-        events.append(
-            {
-                "incident_id": m.group("incident_id"),
-                "service": m.group("service"),
-                "timestamp": to_utc_iso(m.group("ts"), "app"),
-            }
-        )
-    return events
+        parsed = parser(line)
+        if parsed is not None:
+            entries.append(parsed)
+    return entries
 
 
-def parse_worker_log(path: Path):
-    events = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        m = WORKER_PATTERN.match(line.strip())
-        if not m:
-            continue
-        events.append(
-            {
-                "incident_id": m.group("incident_id"),
-                "service": m.group("service"),
-                "timestamp": to_utc_iso(m.group("ts"), "worker"),
-            }
-        )
-    return events
-
-
-def parse_gateway_log(path: Path):
-    events = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        m = GATEWAY_PATTERN.match(line.strip())
-        if not m:
-            continue
-        events.append(
-            {
-                "incident_id": m.group("incident_id"),
-                "service": m.group("service"),
-                "timestamp": to_utc_iso(m.group("ts"), "gateway"),
-            }
-        )
-    return events
-
-
-def aggregate(events):
+def aggregate(entries):
     grouped = defaultdict(list)
-    by_service = defaultdict(int)
+    by_service_sets = defaultdict(set)
 
-    for event in events:
-        grouped[event["incident_id"]].append(event)
-        by_service[event["service"]] += 1
+    for entry in entries:
+        grouped[entry["incident_id"]].append(entry)
 
     incidents = []
-    for incident_id, rows in grouped.items():
-        timestamps = sorted(
-            datetime.strptime(r["timestamp"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-            for r in rows
-        )
-        services = sorted({r["service"] for r in rows})
-        first_seen = timestamps[0]
-        last_seen = timestamps[-1]
-        duration_seconds = int((last_seen - first_seen).total_seconds())
+    for incident_id in sorted(grouped.keys()):
+        items = grouped[incident_id]
+        timestamps = [item["timestamp"] for item in items]
+        services = sorted({item["service"] for item in items})
+        highest_severity = max(items, key=lambda item: SEVERITY_RANK[item["severity"]])["severity"]
+        first_seen = min(timestamps)
+        last_seen = max(timestamps)
+
+        for service in services:
+            by_service_sets[service].add(incident_id)
 
         incidents.append(
             {
                 "incident_id": incident_id,
                 "services": services,
-                "count": len(rows),
-                "first_seen": first_seen.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "last_seen": last_seen.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "duration_seconds": duration_seconds,
+                "count": len(items),
+                "severity": highest_severity,
+                "first_seen": to_iso_utc(first_seen),
+                "last_seen": to_iso_utc(last_seen),
+                "duration_seconds": int((last_seen - first_seen).total_seconds()),
             }
         )
 
-    incidents.sort(key=lambda x: x["incident_id"])
+    by_service = {
+        service: len(by_service_sets[service])
+        for service in sorted(by_service_sets.keys())
+    }
 
     return {
         "total_incidents": len(incidents),
-        "by_service": dict(sorted(by_service.items())),
+        "by_service": by_service,
         "incidents": incidents,
     }
 
 
 def main():
-    events = []
-    events.extend(parse_app_log(DATA_DIR / "app.log"))
-    events.extend(parse_worker_log(DATA_DIR / "worker.log"))
-    events.extend(parse_gateway_log(DATA_DIR / "gateway.log"))
+    entries = []
+    entries.extend(parse_file(DATA_DIR / "app.log", parse_app_line))
+    entries.extend(parse_file(DATA_DIR / "worker.log", parse_worker_line))
+    entries.extend(parse_file(DATA_DIR / "gateway.log", parse_gateway_line))
 
-    report = aggregate(events)
+    report = aggregate(entries)
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_PATH.open("w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":

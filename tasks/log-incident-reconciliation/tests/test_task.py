@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
 
-OUTPUT_PATH = Path("/output/report.json")
-EXPECTED_PATH = Path("/expected/report.json")
+BASE_DIR = Path(__file__).resolve().parent.parent
+OUTPUT_PATH = BASE_DIR / "output" / "report.json"
+EXPECTED_PATH = BASE_DIR / "expected" / "report.json"
 
 
 def load_json(path: Path):
