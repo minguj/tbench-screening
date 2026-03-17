@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY . /app
 
-RUN chmod +x /app/run.sh
+RUN chmod +x run.sh
 
-CMD ["bash", "/app/run.sh"]
+CMD ["./run.sh"]

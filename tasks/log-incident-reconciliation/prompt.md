@@ -144,3 +144,11 @@ The output must be a valid JSON object with the following structure:
 ## Goal
 
 Produce a correct and fully structured `/output/report.json` based on the given log files.
+
+
+
+## Output Requirements
+
+Your solution must read input files from `/data` and write the final report to `/output/report.json`.
+
+Do not modify files under `/expected` or `/oracle`.
