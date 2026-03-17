@@ -5,3 +5,8 @@
 15/03/2026 10:22:10 WARN gateway missing incident
 MALFORMED GATEWAY ENTRY
 15/03/2026 10:23:00 ERROR gateway edge timeout id=INC006
+15/03/2026 10:20:20 WARN gateway retrying upstream id=INC007
+15/03/2026 10:19:59 ERROR gateway auth cascade failure id=INC008
+15/03/2026 10:24:00 WARN gateway invalid incident id id=
+15/03/2026 10:24:30 ERROR gateway search proxy failure id=INC010
+15/03/2026 10:25:00 WARN gateway duplicated path id=INC011

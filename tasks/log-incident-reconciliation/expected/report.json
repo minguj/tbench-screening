@@ -1,59 +1,135 @@
 {
-  "total_incidents": 6,
+  "total_incidents": 10,
   "by_service": {
     "auth": 3,
     "billing": 2,
-    "gateway": 4,
-    "worker": 5
+    "gateway": 8,
+    "orders": 1,
+    "search": 1,
+    "worker": 7
   },
   "incidents": [
     {
       "incident_id": "INC001",
-      "services": ["auth", "gateway", "worker"],
+      "services": [
+        "auth",
+        "gateway",
+        "worker"
+      ],
       "count": 4,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:16:01Z",
       "last_seen": "2026-03-15T01:16:05Z",
       "duration_seconds": 4
     },
     {
       "incident_id": "INC002",
-      "services": ["auth"],
+      "services": [
+        "auth"
+      ],
       "count": 1,
+      "severity": "WARN",
       "first_seen": "2026-03-15T01:17:10Z",
       "last_seen": "2026-03-15T01:17:10Z",
       "duration_seconds": 0
     },
     {
       "incident_id": "INC003",
-      "services": ["worker"],
+      "services": [
+        "worker"
+      ],
       "count": 2,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:18:00Z",
       "last_seen": "2026-03-15T01:18:30Z",
       "duration_seconds": 30
     },
     {
       "incident_id": "INC004",
-      "services": ["gateway"],
+      "services": [
+        "gateway"
+      ],
       "count": 1,
+      "severity": "WARN",
       "first_seen": "2026-03-15T01:20:00Z",
       "last_seen": "2026-03-15T01:20:00Z",
       "duration_seconds": 0
     },
     {
       "incident_id": "INC005",
-      "services": ["billing", "gateway", "worker"],
+      "services": [
+        "billing",
+        "gateway",
+        "worker"
+      ],
       "count": 4,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:18:20Z",
       "last_seen": "2026-03-15T01:20:20Z",
       "duration_seconds": 120
     },
     {
       "incident_id": "INC006",
-      "services": ["gateway", "worker"],
+      "services": [
+        "gateway",
+        "worker"
+      ],
       "count": 2,
+      "severity": "ERROR",
       "first_seen": "2026-03-15T01:21:00Z",
       "last_seen": "2026-03-15T01:23:00Z",
       "duration_seconds": 120
+    },
+    {
+      "incident_id": "INC007",
+      "services": [
+        "gateway",
+        "orders",
+        "worker"
+      ],
+      "count": 4,
+      "severity": "ERROR",
+      "first_seen": "2026-03-15T01:20:10Z",
+      "last_seen": "2026-03-15T01:20:40Z",
+      "duration_seconds": 30
+    },
+    {
+      "incident_id": "INC008",
+      "services": [
+        "auth",
+        "gateway",
+        "worker"
+      ],
+      "count": 3,
+      "severity": "ERROR",
+      "first_seen": "2026-03-15T01:19:50Z",
+      "last_seen": "2026-03-15T01:21:30Z",
+      "duration_seconds": 100
+    },
+    {
+      "incident_id": "INC010",
+      "services": [
+        "gateway",
+        "search",
+        "worker"
+      ],
+      "count": 3,
+      "severity": "ERROR",
+      "first_seen": "2026-03-15T01:22:00Z",
+      "last_seen": "2026-03-15T01:24:35Z",
+      "duration_seconds": 155
+    },
+    {
+      "incident_id": "INC011",
+      "services": [
+        "billing",
+        "gateway"
+      ],
+      "count": 3,
+      "severity": "WARN",
+      "first_seen": "2026-03-15T01:23:15Z",
+      "last_seen": "2026-03-15T01:25:00Z",
+      "duration_seconds": 105
     }
   ]
 }

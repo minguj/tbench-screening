@@ -48,6 +48,7 @@ Each file contains log entries with different formats.
   - timestamp
   - service name
   - incident ID
+  - severity (`ERROR` or `WARN`)
 
 ---
 
@@ -74,6 +75,29 @@ For each incident:
   - earliest timestamp (`first_seen`)
   - latest timestamp (`last_seen`)
   - duration in seconds
+  - aggregated severity
+
+---
+
+## Additional Rules (Deterministic Behavior)
+
+The following rules MUST be strictly applied:
+
+- Logs with the same `incident_id` must be merged into a single incident
+- Only `ERROR` and `WARN` logs are considered (ignore others)
+- Severity must be aggregated using the highest priority:
+  ```
+  ERROR > WARN
+  ```
+- `first_seen` must be the earliest timestamp across all entries
+- `last_seen` must be the latest timestamp across all entries
+- `duration_seconds` must be calculated as the difference between `last_seen` and `first_seen` in seconds
+- Services must be unique and sorted alphabetically
+- Incident list must be sorted by `incident_id` in ascending order
+- Logs without a valid `incident_id` must be ignored
+- Malformed or unparsable log lines must be ignored
+- Logs from different files with the same `incident_id` must be aggregated together
+- The output must be fully deterministic (same input must always produce the same output)
 
 ---
 
@@ -111,6 +135,7 @@ The output must be a valid JSON object with the following structure:
       "incident_id": "<string>",
       "services": ["<string>", "..."],
       "count": <int>,
+      "severity": "<string>",
       "first_seen": "<ISO8601 UTC>",
       "last_seen": "<ISO8601 UTC>",
       "duration_seconds": <int>
@@ -124,19 +149,15 @@ The output must be a valid JSON object with the following structure:
 ## Constraints
 
 - Output must be **deterministic**
-- Incident list must be sorted by:
-  1. `incident_id` ascending
-- Services list must be sorted alphabetically
-- Ignore any logs without a valid `incident_id`
 - All timestamps must be normalized to UTC
 - The solution must run in a Linux terminal environment
+- Do not rely on external services or internet access
 
 ---
 
 ## Notes
 
 - You may use any scripting language available in the environment (e.g., Python, Bash)
-- The solution should not rely on external services or internet access
 - Ensure your solution handles mixed formats robustly
 
 ---
@@ -145,7 +166,7 @@ The output must be a valid JSON object with the following structure:
 
 Produce a correct and fully structured `/output/report.json` based on the given log files.
 
-
+---
 
 ## Output Requirements
 

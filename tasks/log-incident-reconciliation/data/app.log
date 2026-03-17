@@ -7,3 +7,11 @@
 2026-03-15 10:19:10 ERROR service=auth msg="missing incident id"
 INVALID LOG LINE HERE
 2026-03-15 10:20:00 INFO service=billing msg="recovered"
+2026-03-15 10:20:30 WARN service=orders msg="cache miss" incident_id=INC007
+2026-03-15 10:20:10 ERROR service=orders msg="db locked" incident_id=INC007
+2026-03-15 10:21:30 WARN service=auth msg="token refresh delayed" incident_id=INC008
+2026-03-15 10:21:40 WARN service=auth msg="missing incident id again"
+2026-03-15 10:22:00 ERROR service=search msg="index build failed" incident_id=INC010
+MALFORMED APP ENTRY incident_id=INC999
+2026-03-15 10:23:15 WARN service=billing msg="duplicate warn" incident_id=INC011
+2026-03-15 10:23:15 WARN service=billing msg="duplicate warn" incident_id=INC011

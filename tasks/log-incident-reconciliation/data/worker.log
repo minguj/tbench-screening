@@ -6,3 +6,8 @@
 [2026-03-15T01:20:05Z] WARN worker: waiting for dependency
 BROKEN WORKER LOG
 [2026-03-15T01:21:00Z] ERROR worker: orphan event (incident=INC006)
+[2026-03-15T01:19:50Z] WARN worker: auth retry scheduled (incident=INC008)
+[2026-03-15T01:20:40Z] ERROR worker: order fanout failed (incident=INC007)
+[2026-03-15T01:24:35Z] WARN worker: search retry queued (incident=INC010)
+[2026-03-15T01:25:10Z] WARN worker: missing id again
+[2026-03-15T01:25:20Z] ERROR worker: empty incident value (incident=)
