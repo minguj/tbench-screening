@@ -1,0 +1,7 @@
+15/03/2026 10:16:02 ERROR gateway upstream failure id=INC001
+15/03/2026 10:20:00 WARN gateway slow request id=INC004
+15/03/2026 10:20:20 ERROR gateway bad upstream id=INC005
+15/03/2026 10:21:05 INFO gateway request complete id=INC004
+15/03/2026 10:22:10 WARN gateway missing incident
+MALFORMED GATEWAY ENTRY
+15/03/2026 10:23:00 ERROR gateway edge timeout id=INC006

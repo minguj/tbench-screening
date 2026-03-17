@@ -9,7 +9,11 @@
   "incidents": [
     {
       "incident_id": "INC001",
-      "services": ["auth", "gateway", "worker"],
+      "services": [
+        "auth",
+        "gateway",
+        "worker"
+      ],
       "count": 4,
       "first_seen": "2026-03-15T01:16:01Z",
       "last_seen": "2026-03-15T01:16:05Z",
@@ -17,7 +21,9 @@
     },
     {
       "incident_id": "INC002",
-      "services": ["auth"],
+      "services": [
+        "auth"
+      ],
       "count": 1,
       "first_seen": "2026-03-15T01:17:10Z",
       "last_seen": "2026-03-15T01:17:10Z",
@@ -25,7 +31,9 @@
     },
     {
       "incident_id": "INC003",
-      "services": ["worker"],
+      "services": [
+        "worker"
+      ],
       "count": 2,
       "first_seen": "2026-03-15T01:18:00Z",
       "last_seen": "2026-03-15T01:18:30Z",
@@ -33,7 +41,9 @@
     },
     {
       "incident_id": "INC004",
-      "services": ["gateway"],
+      "services": [
+        "gateway"
+      ],
       "count": 1,
       "first_seen": "2026-03-15T01:20:00Z",
       "last_seen": "2026-03-15T01:20:00Z",
@@ -41,7 +51,11 @@
     },
     {
       "incident_id": "INC005",
-      "services": ["billing", "gateway", "worker"],
+      "services": [
+        "billing",
+        "gateway",
+        "worker"
+      ],
       "count": 4,
       "first_seen": "2026-03-15T01:18:20Z",
       "last_seen": "2026-03-15T01:20:20Z",
@@ -49,7 +63,10 @@
     },
     {
       "incident_id": "INC006",
-      "services": ["gateway", "worker"],
+      "services": [
+        "gateway",
+        "worker"
+      ],
       "count": 2,
       "first_seen": "2026-03-15T01:21:00Z",
       "last_seen": "2026-03-15T01:23:00Z",

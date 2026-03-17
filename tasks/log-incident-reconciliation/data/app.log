@@ -1,0 +1,9 @@
+2026-03-15 10:15:32 INFO service=auth msg="login success" user=123
+2026-03-15 10:16:01 ERROR service=auth msg="db connection failed" incident_id=INC001
+2026-03-15 10:16:05 ERROR service=auth msg="db connection failed" incident_id=INC001
+2026-03-15 10:17:10 WARN service=auth msg="slow response" incident_id=INC002
+2026-03-15 10:18:20 ERROR service=billing msg="payment timeout" incident_id=INC005
+2026-03-15 10:18:45 WARN service=billing msg="retry delay" incident_id=INC005
+2026-03-15 10:19:10 ERROR service=auth msg="missing incident id"
+INVALID LOG LINE HERE
+2026-03-15 10:20:00 INFO service=billing msg="recovered"

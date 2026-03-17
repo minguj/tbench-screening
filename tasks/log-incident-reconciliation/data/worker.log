@@ -1,0 +1,8 @@
+[2026-03-15T01:16:03Z] ERROR worker: job failed (incident=INC001)
+[2026-03-15T01:18:00Z] ERROR worker: timeout (incident=INC003)
+[2026-03-15T01:18:30Z] WARN worker: queue lag detected (incident=INC003)
+[2026-03-15T01:19:00Z] INFO worker: retry success
+[2026-03-15T01:20:00Z] ERROR worker: downstream unavailable (incident=INC005)
+[2026-03-15T01:20:05Z] WARN worker: waiting for dependency
+BROKEN WORKER LOG
+[2026-03-15T01:21:00Z] ERROR worker: orphan event (incident=INC006)
