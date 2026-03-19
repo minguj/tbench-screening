@@ -1,0 +1,13 @@
+version = "1.0"
+
+[task]
+name = "log-incident-reconciliation"
+description = "Parse heterogeneous logs and generate a deterministic incident report"
+
+[metadata]
+difficulty = "medium"
+category = "log-processing"
+tags = ["parsing", "aggregation", "deterministic", "timezone"]
+
+[verifier]
+timeout_sec = 120.0
