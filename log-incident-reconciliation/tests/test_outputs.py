@@ -245,6 +245,40 @@ def test_ignored_invalid_or_non_incident_lines_do_not_create_extra_incidents():
     assert len(incident_ids) == 10, f"Expected exactly 10 incident IDs, got {len(incident_ids)}"
 
 
+# Edge case 1:
+# INFO lines that contain an incident-like token must still be ignored.
+def test_info_lines_do_not_affect_results():
+    report = load_report()
+    incident_ids = {item["incident_id"] for item in report["incidents"]}
+
+    assert "INC004" in incident_ids, "INC004 should exist from WARN gateway line"
+    assert get_incident(report, "INC004")["count"] == 1, (
+        "INFO gateway line for INC004 must not increase count"
+    )
+
+
+# Edge case 2:
+# Lines with missing incident ID syntax or empty incident value must be ignored.
+def test_missing_or_empty_incident_id_lines_are_ignored():
+    report = load_report()
+    incident_ids = {item["incident_id"] for item in report["incidents"]}
+
+    assert "" not in incident_ids, "Empty incident IDs must not appear in output"
+    assert "INC009" not in incident_ids, "Unexpected incident created from invalid lines"
+
+
+# Edge case 3:
+# Duplicate WARN lines with the same incident ID should be counted, not deduplicated.
+def test_duplicate_entries_are_counted_but_services_remain_unique():
+    report = load_report()
+    inc011 = get_incident(report, "INC011")
+
+    assert inc011["count"] == 3, "Duplicate valid log entries must increase occurrence count"
+    assert inc011["services"] == ["billing", "gateway"], (
+        "Duplicate entries must not duplicate service names"
+    )
+
+
 def run_all_tests():
     test_report_file_exists()
     test_top_level_structure()
@@ -259,6 +293,9 @@ def run_all_tests():
     test_expected_services_per_incident()
     test_expected_time_ranges()
     test_ignored_invalid_or_non_incident_lines_do_not_create_extra_incidents()
+    test_info_lines_do_not_affect_results()
+    test_missing_or_empty_incident_id_lines_are_ignored()
+    test_duplicate_entries_are_counted_but_services_remain_unique()
 
 
 if __name__ == "__main__":

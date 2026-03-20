@@ -1,133 +1,187 @@
-# tbench-screening
+# log-incident-reconciliation
 
-This repository contains a T-bench screening task.
+## 개요 (Overview)
 
-## Task
+이 저장소는 **T-bench 스크리닝 과제**로, AI 에이전트의 **다중 로그 파싱, 정규화, 그리고 결정적 집계 능력**을 평가하기 위해 설계되었습니다.
 
-**log-incident-reconciliation**
+이 과제는 단순한 로그 파싱을 넘어 다음과 같은 능력을 요구합니다:
 
-The task requires an AI agent to parse multiple heterogeneous log files, normalize incident records, aggregate related incidents across sources, and generate a deterministic JSON report.
+- 서로 다른 로그 포맷 처리
+- 여러 소스 간 incident 병합
+- 시간 정보의 UTC 정규화
+- 항상 동일한 결과를 보장하는 deterministic 처리
 
-## What the Task Does
+---
 
-The agent must:
+## 과제 목표 (Task Objective)
 
-- read log files from multiple services
-- parse different log formats
-- extract only `ERROR` and `WARN` entries
-- ignore malformed lines
-- ignore logs without a valid incident ID
-- normalize all timestamps to UTC ISO 8601 format
-- merge records with the same `incident_id` across files
-- compute incident-level summaries such as:
-  - involved services
-  - total occurrence count
-  - aggregated severity (`ERROR > WARN`)
-  - earliest occurrence time
-  - latest occurrence time
-  - duration in seconds
-- generate summary statistics, including:
-  - total number of unique incidents
-  - incident count per service
+에이전트는 여러 서비스에서 생성된 로그 파일을 분석하여, incident 단위로 정리된 **결정적(JSON) 리포트**를 생성해야 합니다.
 
-The final output must be deterministic and written to `output/report.json`.
+### 주요 요구사항
 
-## Structure
+- 여러 로그 파일 읽기
+- 서로 다른 로그 포맷 파싱
+- `ERROR`, `WARN` 로그만 추출
+- 잘못된 형식의 로그는 무시
+- `incident_id`가 없는 로그는 무시
+- 모든 시간은 **UTC ISO 8601 형식으로 변환**
+- 동일한 `incident_id`를 하나로 병합
+- 항상 동일한 결과 생성 (deterministic)
 
-- `tasks/log-incident-reconciliation/prompt.md`  
-  Task instructions for the AI agent
+---
 
-- `tasks/log-incident-reconciliation/solution.py`  
-  Candidate solution entrypoint
+## 입력 데이터 (Input Data)
 
-- `tasks/log-incident-reconciliation/oracle/solve.py`  
-  Reference implementation used by the task author only
+컨테이너 내부 경로:
 
-- `tasks/log-incident-reconciliation/tests/test_task.py`  
-  Verification script for candidate output
+/app/app.log  
+/app/worker.log  
+/app/gateway.log  
 
-- `tasks/log-incident-reconciliation/expected/report.json`  
-  Expected deterministic output for the provided test data
+각 로그 파일은 서로 다른 형식을 가지고 있으며, 이를 모두 처리해야 합니다.
 
-- `tasks/log-incident-reconciliation/Dockerfile`  
-  Isolated execution environment
+---
 
-## Input Files
+## 출력 결과 (Output Specification)
 
-The task uses log files under `/data`:
+결과는 아래 경로에 생성되어야 합니다:
 
-- `/data/app.log`
-- `/data/worker.log`
-- `/data/gateway.log`
+/app/report.json  
 
-Each file uses a different log format, so the candidate must handle heterogeneous parsing robustly.
+### 출력 구조 예시
 
-## Output
+{
+  "total_incidents": 0,
+  "by_service": {
+    "service_name": 0
+  },
+  "incidents": [
+    {
+      "incident_id": "INC001",
+      "services": ["auth", "billing"],
+      "count": 3,
+      "severity": "ERROR",
+      "first_seen": "2026-03-15T01:16:01Z",
+      "last_seen": "2026-03-15T01:18:20Z",
+      "duration_seconds": 139
+    }
+  ]
+}
 
-The candidate solution must write the final report to:
+---
 
-```text
-/output/report.json
-```
+## 결정성 규칙 (Deterministic Rules)
 
-The output JSON must include:
+동일한 입력은 항상 동일한 출력이 생성되어야 합니다.
 
-- `total_incidents`
-- `by_service`
-- `incidents`
+### 필수 규칙
 
-Each incident record must contain:
+- `ERROR`, `WARN` 로그만 포함
+- 파싱 불가능한 로그는 제외
+- `incident_id`가 없거나 유효하지 않으면 제외
+- 모든 소스에서 동일 incident 병합
 
-- `incident_id`
-- `services`
-- `count`
-- `severity`
-- `first_seen`
-- `last_seen`
-- `duration_seconds`
+### 집계 규칙
 
-## Deterministic Rules
+- severity: `ERROR > WARN`
+- count: 전체 발생 횟수
+- first_seen: 가장 빠른 시간
+- last_seen: 가장 늦은 시간
+- duration_seconds: last - first
 
-The task is designed to be strictly deterministic. The solution must apply these rules:
+### 정렬 규칙
 
-- logs with the same `incident_id` must be merged into a single incident
-- only `ERROR` and `WARN` logs are considered
-- malformed or unparsable log lines must be ignored
-- logs without a valid `incident_id` must be ignored
-- severity must be aggregated using highest priority:
-  - `ERROR > WARN`
-- `first_seen` must be the earliest timestamp for the incident
-- `last_seen` must be the latest timestamp for the incident
-- `duration_seconds` must equal `last_seen - first_seen`
-- services must be unique and sorted alphabetically
-- incidents must be sorted by `incident_id` ascending
-- the same input must always produce the same output
+- services: 중복 제거 후 알파벳 정렬
+- incidents: incident_id 기준 오름차순
+- by_service: 서비스명 기준 정렬
 
-## Verification Coverage
+---
 
-The test suite validates:
+## Edge Case (중요)
 
-- exact match against `expected/report.json`
-- top-level JSON structure
-- deterministic sorting
-- cross-source incident merging
-- timestamp normalization and ordering
-- severity aggregation
-- duplicate line counting
-- exclusion of malformed lines
-- exclusion of logs missing valid incident IDs
+이 과제는 다음과 같은 edge case를 포함합니다:
 
-## Run
+- 동일 incident에 대한 중복 로그
+- 서로 다른 로그 포맷 혼합
+- 잘못된 incident_id
+- 파싱 불가능한 로그 라인
+- 시간대 정규화 오류 가능성
+- 여러 서비스에 걸친 incident
 
-```bash
-cd tasks/log-incident-reconciliation
-docker build -t tbench-log-task .
-docker run --rm tbench-log-task
-```
+---
 
-## Notes
+## 검증 (Verification)
 
-- The candidate solution must generate `output/report.json`
-- Tests validate only the candidate output
-- Oracle code is included as a reference and is not executed by the test flow
-- The task does not require internet access or external services
+테스트는 다음을 검증합니다:
+
+- expected 결과와 완전 일치
+- JSON 구조 정확성
+- deterministic 정렬
+- cross-source 병합 정확성
+- UTC 시간 정규화
+- severity 집계 정확성
+- 중복 카운트 정확성
+- 잘못된 로그 제외 여부
+
+---
+
+## 프로젝트 구조 (Project Structure)
+
+log-incident-reconciliation/
+├── instruction.md
+├── task.toml
+├── environment/
+│   ├── Dockerfile
+│   ├── app.log
+│   ├── worker.log
+│   ├── gateway.log
+│   └── solution_impl.py
+├── solution/
+│   └── solve.sh
+└── tests/
+    ├── test.sh
+    └── test_outputs.py
+
+---
+
+## 실행 방법 (How to Run)
+
+harbor run -a oracle -p log-incident-reconciliation
+
+---
+
+## 참고 사항 (Notes)
+
+- 결과는 반드시 `/app/report.json`에 생성되어야 합니다
+- 평가는 오직 출력 결과로만 진행됩니다
+- 외부 API 또는 네트워크 사용 불가
+- 단순 파싱이 아닌 **데이터 정규화 및 추론 능력**을 평가합니다
+
+---
+
+## 핵심 난이도 (Key Challenge)
+
+이 과제는 단순해 보이지만 다음 요소 때문에 난이도가 존재합니다:
+
+- 다양한 로그 포맷 처리
+- 여러 파일 간 데이터 병합
+- 시간대 정규화
+- 엄격한 deterministic 요구사항
+
+부분적으로 맞는 구현은 테스트를 통과하지 못합니다.
+
+---
+
+## 목적 (Purpose)
+
+이 과제는 AI가 다음 능력을 갖추었는지 평가합니다:
+
+- 여러 데이터 소스를 종합적으로 처리하는 능력
+- 정규화 및 집계 로직 구현 능력
+- 재현 가능한 deterministic 결과 생성 능력
+
+---
+
+## 라이선스 (License)
+
+본 저장소는 T-bench 스크리닝 용도로 제공됩니다.
